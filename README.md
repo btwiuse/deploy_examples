@@ -8,6 +8,7 @@ This repository contains a list of examples for Deno Deploy.
 - [slack](slack) - A Slack Slash Command example.
 - [discord](discord) - A Discord Slash Command example.
 - [yaus](yaus) - A URL shortener built on top of Deno Deploy and FaunaDB.
+- [gurls](gurls) - A URL shortener built on top of Deno Deploy and Gear.
 - [issues](issues) - A server rendered (using JSX) website that displays issues
   with most comments of a GitHub repository.
 - [telegram](telegram) - A Telegram Bot Command example.
