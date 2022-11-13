@@ -1,11 +1,6 @@
 /** @jsx h */
-import {
-  h,
-  jsx,
-  PathParams,
-  serve,
-} from "https://deno.land/x/sift@0.4.2/mod.ts";
-import { nanoid } from "https://cdn.esm.sh/v14/nanoid@3.1.20/esnext/nanoid.js";
+import { h, jsx, PathParams, serve } from "https://deno.land/x/sift/mod.ts";
+import { nanoid } from "https://cdn.esm.sh/v14/nanoid/esnext/nanoid.js";
 
 serve({
   "/": homePage,
@@ -162,7 +157,7 @@ async function homePage(request: Request) {
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width" />
-        <title>YAUS | Yet Another URL Shortener</title>
+        <title>GURLS | Gear URL Shortener</title>
       </head>
       <script
         type="text/javascript"
@@ -172,11 +167,10 @@ async function homePage(request: Request) {
       <body>
         <header>
           <a className="brand">
-            <strong>Y</strong>et <strong>A</strong>nother <strong>U</strong>RL
-            {" "}
+            <strong>G</strong>ear <strong>URL</strong>{" "}
             <strong>S</strong>hortener
           </a>
-          <a href="https://github.com/denoland/deploy_examples/tree/main/yaus">
+          <a href="https://github.com/btwiuse/gurls">
             <img
               height="32"
               width="32"
@@ -211,7 +205,7 @@ async function homePage(request: Request) {
           )}
         </main>
         <footer>
-          <p>Built using Fauna and Sift. Deployed on Deno Dash.</p>
+          <p>Built using Gear and Sift. Deployed on Deno Dash.</p>
         </footer>
       </body>
     </html>,
@@ -219,8 +213,10 @@ async function homePage(request: Request) {
 }
 
 /** Handle short link (`/<code>`) requests. */
-async function handleCodeRequests(_request: Request, params?: PathParams) {
-  const { code = "" } = params as { code: string };
+async function handleCodeRequests(req: Request, params?: PathParams) {
+  let url = new URL(req.url);
+  const code = decodeURI(url.pathname.replace(/^\//, ""));
+  console.log({ code, params });
   if (code) {
     const url = await findUrl(code);
     if (url) {
@@ -236,118 +232,40 @@ const codeCache = new Map<string, string>();
 /** Cache the url as key and code as value. */
 const urlCache = new Map<string, string>();
 
-// GraphQL to find url by code.
-const findUrlGql = gql`
-  query($code: String!) {
-    findUrlByCode(code: $code) {
-      url
-    }
-  }
-`;
 /** Find url for the provided url. */
 async function findUrl(code: string): Promise<string | undefined> {
   if (codeCache.has(code)) {
     return codeCache.get(code);
   }
-
-  const { data } = (await executeFauna(findUrlGql, { code })) as {
-    data: { findUrlByCode: { url: string } };
-  };
-  if (data?.findUrlByCode?.url) {
-    codeCache.set(code, data?.findUrlByCode.url);
-    return data?.findUrlByCode.url;
-  }
+  // TODO: read contract state
+  return undefined;
 }
 
-// GraphQL to find short code by url.
-const findCodeGql = gql`
-  query($url: String!) {
-    findCodeByUrl(url: $url) {
-      code
-    }
-  }
-`;
 /** Find short code for the provided url. */
 async function findCode(url: string): Promise<string | undefined> {
   if (urlCache.has(url)) {
     return urlCache.get(url);
   }
 
-  const { data } = (await executeFauna(findCodeGql, { url })) as {
-    data: { findCodeByUrl: { code: string } };
-  };
-  if (data?.findCodeByUrl?.code) {
-    urlCache.set(url, data.findCodeByUrl.code);
-    return data.findCodeByUrl.code;
-  }
+  return undefined;
 }
 
-// GraphQL to create a new link.
-const addLinkGQL = gql`
-  mutation($url: String!, $code: String!) {
-    createLink(data: { url: $url, code: $code }) {
-      code
-      url
-    }
-  }
-`;
 /** Create a new link with the provided url and code.
  * Also populate the cache. */
 async function addUrl(
   url: string,
   code: string,
 ): Promise<{ code: string; url: string }> {
-  const {
-    data: { createLink: link },
-  } = (await executeFauna(addLinkGQL, { url, code })) as {
-    data: { createLink: { url: string; code: string } };
+  let link = {
+    url,
+    code,
   };
+  console.log(link);
 
+  // TODO: write contract state
   codeCache.set(code, link?.url);
   urlCache.set(url, link?.code);
   return link;
-}
-
-/** Generic function to execute GraphQL at the Fauna GraphQL endpoint. */
-async function executeFauna(
-  query: string,
-  variables: { [key: string]: unknown },
-): Promise<{
-  data?: unknown;
-  error?: { message: string };
-}> {
-  const token = Deno.env.get("FAUNA_SECRET");
-  if (!token) {
-    throw new Error("environment variable FAUNA_SECRET not set");
-  }
-
-  try {
-    const res = await fetch("https://graphql.fauna.com/graphql", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        query,
-        variables,
-      }),
-    });
-
-    const { data, errors } = await res.json();
-    if (errors) {
-      return { data, error: errors[0] };
-    }
-
-    return { data };
-  } catch (error) {
-    return { error };
-  }
-}
-
-/** Wrapper function to get syntax highlight for GraphQL in editors. */
-function gql(gql: TemplateStringsArray) {
-  return gql.join("");
 }
 
 /** Wrapper function to get syntax highlight for CSS in editors. */
