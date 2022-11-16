@@ -3,7 +3,7 @@ import { h, jsx, serve } from "https://deno.land/x/sift/mod.ts";
 import { nanoid } from "https://cdn.esm.sh/v14/nanoid/esnext/nanoid.js";
 import { GearApi } from "https://github.com/btwiuse/gear-js/raw/deno/api/index.ts";
 
-import metaWasmBase64 from "https://unpkg.com/gurls/dist/gurls.meta.wasm.base64.json" assert {
+import metaWasmBase64 from "https://unpkg.com/gurls@0.0.12/dist/gurls.meta.wasm.base64.json" assert {
   type: "json",
 };
 
@@ -235,7 +235,7 @@ async function homePage(request: Request) {
       </body>
       <script
         charSet="utf-8"
-        src="https://unpkg.com/gurls/dist/gurls.js"
+        src="https://unpkg.com/gurls@0.0.12/dist/gurls.js"
         type="module"
       />
     </html>,
