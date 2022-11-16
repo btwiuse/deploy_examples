@@ -4,7 +4,7 @@ import { nanoid } from "https://cdn.esm.sh/v14/nanoid/esnext/nanoid.js";
 import { GearApi } from "https://github.com/btwiuse/gear-js/raw/deno/api/index.ts";
 import { Buffer } from "https://deno.land/std/io/buffer.ts";
 
-import metaWasmBase64 from "https://unpkg.com/gurls@0.0.6/dist/gurls.meta.wasm.base64.json" assert {
+import metaWasmBase64 from "https://unpkg.com/gurls@0.0.7/dist/gurls.meta.wasm.base64.json" assert {
   type: "json",
 };
 
@@ -236,7 +236,7 @@ async function homePage(request: Request) {
       </body>
       <script
         charSet="utf-8"
-        src="https://unpkg.com/gurls@0.0.6/dist/script.js"
+        src="https://unpkg.com/gurls@0.0.7/dist/script.js"
         type="module"
       />
     </html>,
@@ -247,7 +247,6 @@ async function homePage(request: Request) {
 async function handleCodeRequests(req: Request) {
   let url = new URL(req.url);
   const code = decodeURI(url.pathname.replace(/^\//, "")) ?? "";
-  console.log({ code });
   if (code.length > 0) {
     const url = await findUrl(code);
     if (url) {
@@ -271,9 +270,9 @@ async function findUrl(code: string): Promise<string | null> {
   // TODO: read contract state
   const query = { Code: code };
   let result = await api.programState.read(PROGRAM_ID, metaWasm, query);
-  let url = (result.toJSON() as any).maybeUrl;
-  console.log(url);
-  return url;
+  let maybeUrl = (result.toJSON() as any).maybeUrl;
+  console.log({code, maybeUrl});
+  return maybeUrl;
 }
 
 /** Find short code for the provided url. */
