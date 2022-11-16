@@ -3,15 +3,16 @@ import { h, jsx, serve } from "https://deno.land/x/sift/mod.ts";
 import { nanoid } from "https://cdn.esm.sh/v14/nanoid/esnext/nanoid.js";
 import { GearApi } from "https://github.com/btwiuse/gear-js/raw/deno/api/index.ts";
 
-import metaWasmBase64 from "https://unpkg.com/gurls@0.0.4/dist/gurls.meta.wasm.base64.json" assert { type: "json" };
+import metaWasmBase64 from "https://unpkg.com/gurls@0.0.4/dist/gurls.meta.wasm.base64.json" assert {
+  type: "json",
+};
 
-let metaWasm = Uint8Array.from(atob(metaWasmBase64), c => c.charCodeAt(0));
+let metaWasm = Uint8Array.from(atob(metaWasmBase64), (c) => c.charCodeAt(0));
 
 let RPC_NODE = "wss://rpc-node.gear-tech.io";
 
-let PROGRAM_ID = "0x024d4e3cf6afae2f53f3d0e0bdd33a24e903463a51bbd7ca7d2be5cbf66be750";
-
-let PORT = 8000';
+let PROGRAM_ID =
+  "0x024d4e3cf6afae2f53f3d0e0bdd33a24e903463a51bbd7ca7d2be5cbf66be750";
 
 let api = await GearApi.create({
   providerAddress: RPC_NODE,
@@ -20,7 +21,7 @@ let api = await GearApi.create({
 serve({
   "/": homePage,
   "/:code": handleCodeRequests,
-}, { port: PORT });
+});
 
 // Styles for the home page.
 const style = css`
