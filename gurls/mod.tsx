@@ -1,11 +1,27 @@
 /** @jsx h */
-import { h, jsx, PathParams, serve } from "https://deno.land/x/sift/mod.ts";
+import { h, jsx, serve } from "https://deno.land/x/sift/mod.ts";
 import { nanoid } from "https://cdn.esm.sh/v14/nanoid/esnext/nanoid.js";
+import { GearApi } from "https://github.com/btwiuse/gear-js/raw/deno/api/index.ts";
+
+let RPC_NODE = Deno.env.get('RPC_NODE') ?? "wss://rpc-node.gear-tech.io";
+
+let PROGRAM_ID = Deno.env.get('PROGRAM_ID') ??  "0x024d4e3cf6afae2f53f3d0e0bdd33a24e903463a51bbd7ca7d2be5cbf66be750";
+
+// let metaWasm = Deno.readFileSync( "/home/aaron/gurls/target/wasm32-unknown-unknown/release/gurls.meta.wasm");
+
+let metaWasmReq = await fetch("https://unpkg.com/gurls@0.0.3-1/dist/gurls.meta.wasm");
+let metaWasm = new Uint8Array(await metaWasmReq.arrayBuffer());
+
+let PORT = Deno.env.get('PORT') ?? '8000';
+
+let api = await GearApi.create({
+  providerAddress: RPC_NODE,
+});
 
 serve({
   "/": homePage,
   "/:code": handleCodeRequests,
-});
+}, { port: PORT });
 
 // Styles for the home page.
 const style = css`
@@ -61,7 +77,7 @@ const style = css`
     outline: none;
   }
 
-  form button[type="submit"] {
+  form button[id="shorten"] {
     font-size: 1.5em;
     border: 0.2em black solid;
     border-radius: 0.4em;
@@ -104,7 +120,7 @@ const style = css`
       width: 12.5em;
     }
 
-    form button[type="submit"] {
+    form button[id="shorten"] {
       margin: 0.4em 0 0 0;
     }
 
@@ -120,6 +136,13 @@ const style = css`
 
 // Script for the clipboard button.
 const script = `
+function hideOutput() {
+  try {
+    document.getElementById("outputDiv").style.display = "none";
+  } catch (error) {
+    console.error(error);
+  }
+}
 document.addEventListener("click", async (event) => {
   if (navigator?.clipboard && event.target.parentNode.id === "clipboard") {
     try {
@@ -179,44 +202,63 @@ async function homePage(request: Request) {
           </a>
         </header>
         <main>
-          <form>
+          <form onsubmit="return false">
             <input
               id="url"
               type="url"
               placeholder="Paste a URL to shorten"
               name="url"
               required
+              onfocus="hideOutput()"
             />
-            <button type="submit">
-              Shorten
+            <button id="shorten" disabled type="submit">
+              Loading script ...
             </button>
           </form>
-          {shortCode && (
-            <div className="link">
-              <span>{`${protocol}//${host}/${shortCode}`}</span>
-              <button id="clipboard">
-                <img
-                  height="32"
-                  width="32"
-                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3' /%3E%3C/svg%3E"
-                />
-              </button>
-            </div>
-          )}
+          <div className="link" style="display:none" id="outputDiv">
+            <span id="outputSpan">{`${protocol}//${host}/<code>`}</span>
+            <button id="clipboard">
+              <img
+                height="32"
+                width="32"
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3' /%3E%3C/svg%3E"
+              />
+            </button>
+          </div>
         </main>
         <footer>
           <p>Built using Gear and Sift. Deployed on Deno Dash.</p>
         </footer>
       </body>
+      <script
+        charset="utf-8"
+        src="https://unpkg.com/gurls@0.0.3-1/dist/script.js"
+        type="module"
+      />
     </html>,
   );
 }
 
+const scriptAfterLoad = `
+  console.log(window.gurls);
+/*
+  let { apiPromise, web3Enable, web3Accounts } = window.gurls;
+  apiPromise.then(async (api) => {
+    let extensions = await web3Enable('GURLS');
+    if (extensions.length === 0) {
+      alert("please install and enable Polkadot.js Extension")
+      return
+    }
+    window.api = api;
+  });
+*/
+`;
+
 /** Handle short link (`/<code>`) requests. */
-async function handleCodeRequests(req: Request, params?: PathParams) {
+async function handleCodeRequests(req: Request) {
   let url = new URL(req.url);
   const code = decodeURI(url.pathname.replace(/^\//, ""));
-  console.log({ code, params });
+  console.log({ code });
   if (code) {
     const url = await findUrl(code);
     if (url) {
@@ -233,12 +275,16 @@ const codeCache = new Map<string, string>();
 const urlCache = new Map<string, string>();
 
 /** Find url for the provided url. */
-async function findUrl(code: string): Promise<string | undefined> {
+async function findUrl(code: string): Promise<string | null> {
   if (codeCache.has(code)) {
     return codeCache.get(code);
   }
   // TODO: read contract state
-  return undefined;
+  const query = { Code: code };
+  let result = await api.programState.read(PROGRAM_ID, metaWasm, query);
+  let json = result.toJSON();
+  console.log(json);
+  return json.maybeUrl;
 }
 
 /** Find short code for the provided url. */
