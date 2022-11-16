@@ -2,6 +2,7 @@
 import { h, jsx, serve } from "https://deno.land/x/sift/mod.ts";
 import { nanoid } from "https://cdn.esm.sh/v14/nanoid/esnext/nanoid.js";
 import { GearApi } from "https://github.com/btwiuse/gear-js/raw/deno/api/index.ts";
+import { Buffer } from "https://deno.land/std/io/buffer.ts";
 
 import metaWasmBase64 from "https://unpkg.com/gurls@0.0.4/dist/gurls.meta.wasm.base64.json" assert {
   type: "json",
@@ -11,7 +12,7 @@ let metaWasm = Uint8Array.from(atob(metaWasmBase64), (c) => c.charCodeAt(0));
 
 let RPC_NODE = "wss://rpc-node.gear-tech.io";
 
-let PROGRAM_ID =
+let PROGRAM_ID: `0x${string}` =
   "0x024d4e3cf6afae2f53f3d0e0bdd33a24e903463a51bbd7ca7d2be5cbf66be750";
 
 serve({
@@ -201,14 +202,14 @@ async function homePage(request: Request) {
           </a>
         </header>
         <main>
-          <form onsubmit="return false">
+          <form onSubmit="return false">
             <input
               id="url"
               type="url"
               placeholder="Paste a URL to shorten"
               name="url"
               required
-              onfocus="hideOutput()"
+              onFocus="hideOutput()"
             />
             <button id="shorten" disabled type="submit">
               Loading script ...
@@ -230,7 +231,7 @@ async function homePage(request: Request) {
         </footer>
       </body>
       <script
-        charset="utf-8"
+        charSet="utf-8"
         src="https://unpkg.com/gurls@0.0.4/dist/script.js"
         type="module"
       />
@@ -241,9 +242,9 @@ async function homePage(request: Request) {
 /** Handle short link (`/<code>`) requests. */
 async function handleCodeRequests(req: Request) {
   let url = new URL(req.url);
-  const code = decodeURI(url.pathname.replace(/^\//, ""));
+  const code = decodeURI(url.pathname.replace(/^\//, "")) ?? '';
   console.log({ code });
-  if (code) {
+  if (code.length > 0) {
     const url = await findUrl(code);
     if (url) {
       return Response.redirect(url, 302);
@@ -266,9 +267,9 @@ async function findUrl(code: string): Promise<string | null> {
   // TODO: read contract state
   const query = { Code: code };
   let result = await api.programState.read(PROGRAM_ID, metaWasm, query);
-  let json = result.toJSON();
-  console.log(json);
-  return json.maybeUrl;
+  let url = (result.toJSON() as any).maybeUrl;
+  console.log(url);
+  return url;
 }
 
 /** Find short code for the provided url. */
@@ -293,8 +294,8 @@ async function addUrl(
   console.log(link);
 
   // TODO: write contract state
-  codeCache.set(code, link?.url);
-  urlCache.set(url, link?.code);
+  codeCache.set(code, url);
+  urlCache.set(url, code);
   return link;
 }
 
