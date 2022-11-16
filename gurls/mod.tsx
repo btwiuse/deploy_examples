@@ -14,13 +14,13 @@ let RPC_NODE = "wss://rpc-node.gear-tech.io";
 let PROGRAM_ID =
   "0x024d4e3cf6afae2f53f3d0e0bdd33a24e903463a51bbd7ca7d2be5cbf66be750";
 
-let api = await GearApi.create({
-  providerAddress: RPC_NODE,
-});
-
 serve({
   "/": homePage,
   "/:code": handleCodeRequests,
+});
+
+let api = await GearApi.create({
+  providerAddress: RPC_NODE,
 });
 
 // Styles for the home page.
