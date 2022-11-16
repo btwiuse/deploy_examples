@@ -15,13 +15,17 @@ let RPC_NODE = "wss://rpc-node.gear-tech.io";
 let PROGRAM_ID: `0x${string}` =
   "0x024d4e3cf6afae2f53f3d0e0bdd33a24e903463a51bbd7ca7d2be5cbf66be750";
 
+let PORT = Deno.env.get("PORT") || "8000";
+
 serve({
   "/": homePage,
   "/:code": handleCodeRequests,
-});
+}, { port: PORT });
 
 let api: GearApi;
-GearApi.create({ providerAddress: RPC_NODE }).then((gearApi)=>{ api = gearApi });
+GearApi.create({ providerAddress: RPC_NODE }).then((gearApi) => {
+  api = gearApi;
+});
 
 // Styles for the home page.
 const style = css`
@@ -242,7 +246,7 @@ async function homePage(request: Request) {
 /** Handle short link (`/<code>`) requests. */
 async function handleCodeRequests(req: Request) {
   let url = new URL(req.url);
-  const code = decodeURI(url.pathname.replace(/^\//, "")) ?? '';
+  const code = decodeURI(url.pathname.replace(/^\//, "")) ?? "";
   console.log({ code });
   if (code.length > 0) {
     const url = await findUrl(code);
