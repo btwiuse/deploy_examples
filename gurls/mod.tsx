@@ -270,7 +270,7 @@ async function findUrl(code: string): Promise<string | null> {
   const query = { Code: code };
   let result = await api.programState.read(PROGRAM_ID, metaWasm, query);
   let maybeUrl = (result.toJSON() as any).maybeUrl;
-  console.log({code, maybeUrl});
+  console.log({ code, maybeUrl });
   return maybeUrl;
 }
 
