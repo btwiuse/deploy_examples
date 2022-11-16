@@ -3,14 +3,15 @@ import { h, jsx, serve } from "https://deno.land/x/sift/mod.ts";
 import { nanoid } from "https://cdn.esm.sh/v14/nanoid/esnext/nanoid.js";
 import { GearApi } from "https://github.com/btwiuse/gear-js/raw/deno/api/index.ts";
 
+import metaWasmBase64 from "https://unpkg.com/gurls@0.0.4/dist/gurls.meta.wasm.base64.json" assert { type: "json" };
+
 let RPC_NODE = Deno.env.get('RPC_NODE') ?? "wss://rpc-node.gear-tech.io";
 
 let PROGRAM_ID = Deno.env.get('PROGRAM_ID') ??  "0x024d4e3cf6afae2f53f3d0e0bdd33a24e903463a51bbd7ca7d2be5cbf66be750";
 
 // let metaWasm = Deno.readFileSync( "/home/aaron/gurls/target/wasm32-unknown-unknown/release/gurls.meta.wasm");
 
-let metaWasmReq = await fetch("https://unpkg.com/gurls@0.0.3-1/dist/gurls.meta.wasm");
-let metaWasm = new Uint8Array(await metaWasmReq.arrayBuffer());
+let metaWasm = Uint8Array.from(atob(metaWasmBase64), c => c.charCodeAt(0));
 
 let PORT = Deno.env.get('PORT') ?? '8000';
 
@@ -232,7 +233,7 @@ async function homePage(request: Request) {
       </body>
       <script
         charset="utf-8"
-        src="https://unpkg.com/gurls@0.0.3-1/dist/script.js"
+        src="https://unpkg.com/gurls@0.0.4/dist/script.js"
         type="module"
       />
     </html>,
