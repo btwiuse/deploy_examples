@@ -5,15 +5,13 @@ import { GearApi } from "https://github.com/btwiuse/gear-js/raw/deno/api/index.t
 
 import metaWasmBase64 from "https://unpkg.com/gurls@0.0.4/dist/gurls.meta.wasm.base64.json" assert { type: "json" };
 
-let RPC_NODE = Deno.env.get('RPC_NODE') ?? "wss://rpc-node.gear-tech.io";
-
-let PROGRAM_ID = Deno.env.get('PROGRAM_ID') ??  "0x024d4e3cf6afae2f53f3d0e0bdd33a24e903463a51bbd7ca7d2be5cbf66be750";
-
-// let metaWasm = Deno.readFileSync( "/home/aaron/gurls/target/wasm32-unknown-unknown/release/gurls.meta.wasm");
-
 let metaWasm = Uint8Array.from(atob(metaWasmBase64), c => c.charCodeAt(0));
 
-let PORT = Deno.env.get('PORT') ?? '8000';
+let RPC_NODE = "wss://rpc-node.gear-tech.io";
+
+let PROGRAM_ID = "0x024d4e3cf6afae2f53f3d0e0bdd33a24e903463a51bbd7ca7d2be5cbf66be750";
+
+let PORT = 8000';
 
 let api = await GearApi.create({
   providerAddress: RPC_NODE,
@@ -239,21 +237,6 @@ async function homePage(request: Request) {
     </html>,
   );
 }
-
-const scriptAfterLoad = `
-  console.log(window.gurls);
-/*
-  let { apiPromise, web3Enable, web3Accounts } = window.gurls;
-  apiPromise.then(async (api) => {
-    let extensions = await web3Enable('GURLS');
-    if (extensions.length === 0) {
-      alert("please install and enable Polkadot.js Extension")
-      return
-    }
-    window.api = api;
-  });
-*/
-`;
 
 /** Handle short link (`/<code>`) requests. */
 async function handleCodeRequests(req: Request) {
