@@ -1,5 +1,5 @@
 FROM btwiuse/arch:deno
 
-ADD . /app/
+ADD ./gurls/mod.tsx /app/
 
 CMD deno run -A /app/mod.tsx
