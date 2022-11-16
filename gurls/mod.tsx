@@ -19,9 +19,8 @@ serve({
   "/:code": handleCodeRequests,
 });
 
-let api = await GearApi.create({
-  providerAddress: RPC_NODE,
-});
+let api: GearApi;
+GearApi.create({ providerAddress: RPC_NODE }).then((gearApi)=>{ api = gearApi });
 
 // Styles for the home page.
 const style = css`
@@ -135,7 +134,7 @@ const style = css`
 `;
 
 // Script for the clipboard button.
-const script1 = `
+const script = `
 function hideOutput() {
   try {
     document.getElementById("outputDiv").style.display = "none";
@@ -184,7 +183,7 @@ async function homePage(request: Request) {
       </head>
       <script
         type="text/javascript"
-        dangerouslySetInnerHTML={{ __html: script1 }}
+        dangerouslySetInnerHTML={{ __html: script }}
       />
       <style dangerouslySetInnerHTML={{ __html: style }} />
       <body>
