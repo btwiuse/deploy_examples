@@ -135,7 +135,7 @@ const style = css`
 `;
 
 // Script for the clipboard button.
-const script = `
+const script1 = `
 function hideOutput() {
   try {
     document.getElementById("outputDiv").style.display = "none";
@@ -184,7 +184,7 @@ async function homePage(request: Request) {
       </head>
       <script
         type="text/javascript"
-        dangerouslySetInnerHTML={{ __html: script }}
+        dangerouslySetInnerHTML={{ __html: script1 }}
       />
       <style dangerouslySetInnerHTML={{ __html: style }} />
       <body>
