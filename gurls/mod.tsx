@@ -4,11 +4,11 @@ import { nanoid } from "https://cdn.esm.sh/v14/nanoid/esnext/nanoid.js";
 import { GearApi } from "https://github.com/btwiuse/gear-js/raw/deno/api/index.ts";
 
 import { metaWasm } from "https://unpkg.com/gurls@0.1.1/dist/mod.ts";
+import deploy from "https://unpkg.com/gurls@0.1.1/dist/deploy.json" assert { type: "json" };
 
-let RPC_NODE = "wss://rpc-node.gear-tech.io";
+let RPC_NODE = deploy.RPC_NODE;
 
-let PROGRAM_ID: `0x${string}` =
-  "0x024d4e3cf6afae2f53f3d0e0bdd33a24e903463a51bbd7ca7d2be5cbf66be750";
+let PROGRAM_ID = deploy.programId as `0x${string}`;
 
 let PORT = Deno.env.get("PORT") || "8000";
 
