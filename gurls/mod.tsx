@@ -3,8 +3,8 @@ import { h, jsx, serve } from "https://deno.land/x/sift/mod.ts";
 import { nanoid } from "https://cdn.esm.sh/v14/nanoid/esnext/nanoid.js";
 import { GearApi } from "https://github.com/btwiuse/gear-js/raw/deno/api/index.ts";
 
-import { metaWasm } from "https://unpkg.com/gurls@0.1.1/dist/mod.ts";
-import deploy from "https://unpkg.com/gurls@0.1.1/dist/deploy.json" assert { type: "json" };
+import { metaWasm } from "https://unpkg.com/gurls@0.1.2/dist/mod.ts";
+import deploy from "https://unpkg.com/gurls@0.1.2/dist/deploy.json" assert { type: "json" };
 
 let RPC_NODE = deploy.RPC_NODE;
 
@@ -228,7 +228,7 @@ async function homePage(request: Request) {
       </body>
       <script
         charSet="utf-8"
-        src="https://unpkg.com/gurls@0.1.1/dist/gurls.js"
+        src="https://unpkg.com/gurls@0.1.2/dist/gurls.js"
         type="module"
       />
     </html>,
